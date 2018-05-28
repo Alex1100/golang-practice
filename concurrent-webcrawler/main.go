@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 // Extract makes an HTTP GET request to the specified URL, parses
@@ -71,7 +72,7 @@ func forEachNode(n *html.Node, pre, post func(n *html.Node)) {
 // read/write
 // and mu.Unlock()
 
-var tokens = make(chan struct{}, 20)
+var tokens = make(chan struct{}, 20000)
 
 func crawl(url string) []string {
 	fmt.Println(url)
@@ -92,8 +93,8 @@ func main() {
 		worklist <- os.Args[1:]
 	}()
 
-	// Create 20 crawler goroutines to fetch each unseen link
-	for i := 0; i < 20; i++ {
+	// Create 20000 crawler goroutines to fetch each unseen link
+	for i := 0; i < 20000; i++ {
 		go func() {
 			for link := range unseenLinks {
 				foundLinks := crawl(link)
@@ -109,7 +110,12 @@ func main() {
 	seen := make(map[string]bool)
 	for list := range worklist {
 		for _, link := range list {
-			if !seen[link] {
+			if len(seen) >= 200000 {
+				fmt.Println("SIZE OF LINKS FOUND ARE: ", len(seen))
+				return
+			}
+
+			if !seen[link] && !strings.Contains(link, "localhost") {
 				seen[link] = true
 				unseenLinks <- link
 			}
