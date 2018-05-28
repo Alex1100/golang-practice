@@ -59,6 +59,18 @@ func forEachNode(n *html.Node, pre, post func(n *html.Node)) {
 	}
 }
 
+// example of a semaphore
+// if the size of the buffered
+// channel was going to be 1
+// then the solo thread could
+// also be secured with a mutex
+// aka import "sync"
+// declare var (mu sync.Mutex)
+// and use mu.Lock()
+// before a given operation
+// read/write
+// and mu.Unlock()
+
 var tokens = make(chan struct{}, 20)
 
 func crawl(url string) []string {
