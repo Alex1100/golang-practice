@@ -6,6 +6,19 @@ import (
 	"time"
 )
 
+/*
+  to allow indexing of the shoe
+  one must opt into slices over
+  structs
+
+  struct types do not allow indexing
+
+  reserve usage of structs for dealing with
+  methods that accept interfaces
+  it's wise to return structs when given
+  an interface as an input to a method
+*/
+
 var shoe [][]string
 
 var cardDefaults = []string{
