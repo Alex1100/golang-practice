@@ -46,8 +46,6 @@ func Extract(url string) ([]string, error) {
 	return links, nil
 }
 
-//!-Extract
-
 func forEachNode(n *html.Node, pre, post func(n *html.Node)) {
 	if pre != nil {
 		pre(n)
@@ -110,7 +108,7 @@ func main() {
 	seen := make(map[string]bool)
 	for list := range worklist {
 		for _, link := range list {
-			if len(seen) >= 200000 {
+			if len(seen) >= 40000 {
 				fmt.Println("SIZE OF LINKS FOUND ARE: ", len(seen))
 				return
 			}
