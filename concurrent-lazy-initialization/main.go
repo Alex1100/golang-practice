@@ -19,7 +19,7 @@ import (
   Using sync.Once in this way, we can
   avoid sharing variables with other
   goroutines until they have been
-  properly constrcuted.
+  properly constructed.
 */
 
 var loadIconsOnce sync.Once
