@@ -72,7 +72,7 @@ func createDeck() []string {
 	return deck
 }
 
-func random(r *rand.Rand, min int, max int) int {
+func random(r *rand.Rand, min, max int) int {
 	return r.Intn(max-min) + min
 }
 
