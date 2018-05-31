@@ -10,9 +10,7 @@ import (
   to allow indexing of the shoe
   one must opt into slices over
   structs
-
   struct types do not allow indexing
-
   reserve usage of structs for dealing with
   methods that accept interfaces
   it's wise to return structs when given
