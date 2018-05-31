@@ -144,20 +144,24 @@ func startGame() {
 	dealerBusted := false
 	dealToHouse := true
 
+	red := color.New(color.FgRed, color.Bold, color.Underline)
+	red.Println("\nTo Quit press `ctrl + c`\n")
+
 	for len(shoe) > 4 {
 		playerBusted = false
 		blackJack = false
 		playerHand = playerHand[:0]
 		dealerHand = dealerHand[:0]
 
+		playerScore = 0
+		houseScore = 0
+
 		if rounds > 0 {
 			reader := bufio.NewReader(os.Stdin)
-			fmt.Println("\nKeep Playing y/n?\n ")
+			fmt.Println("\nPress Enter to Deal New Hands\n ")
 			keepPlaying, _ := reader.ReadString('\n')
 
-			if keepPlaying != "y" ||
-				keepPlaying == "n" {
-
+			if keepPlaying == "y" && keepPlaying != "yes" {
 				if playerScore > houseScore {
 					d.Printf("\nPLAYER WON")
 				}
@@ -172,9 +176,6 @@ func startGame() {
 				return
 			}
 		}
-
-		playerScore = 0
-		houseScore = 0
 
 		rounds = rounds + 1
 
@@ -192,7 +193,8 @@ func startGame() {
 		}
 
 		if len(shoe) > 4 {
-			for (len(playerHand) <= 22 && len(shoe) > 2) &&
+			for len(playerHand) <= 22 &&
+				len(shoe) > 2 &&
 				playerBusted == false &&
 				blackJack == false &&
 				dealToPlayer == true {
@@ -203,10 +205,11 @@ func startGame() {
 				b.Println("\t\t\t    ", dealerHand)
 
 				g.Println("\nHit y/n?\n ")
-				r := bufio.NewReader(os.Stdin)
-				text, _ := r.ReadString('\n')
+				rr := bufio.NewReader(os.Stdin)
+				text, _ := rr.ReadString('\n')
 
-				if text != "n" && text != "no" {
+				if text != "y" {
+					fmt.Println("GOT IN HERE")
 					playerHand = append(playerHand, shoe[0])
 					shoe = shoe[1:len(shoe)]
 
@@ -218,8 +221,16 @@ func startGame() {
 					}
 				}
 
-				if text != "y" && text != "yes" {
+				if text != "n" && text != "y" && text != "yes" {
 					dealToPlayer = false
+				}
+
+				if calculateSum(playerHand, playerHandSum) > 21 {
+					playerBusted = true
+				}
+
+				if calculateSum(playerHand, playerHandSum) == 21 {
+					blackJack = true
 				}
 			}
 
