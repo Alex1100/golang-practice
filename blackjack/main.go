@@ -109,8 +109,10 @@ func calculateSum(cards []string, limit int) int {
 		v := string(card[0])
 		if v == "A" {
 			if (limit + 11) <= 21 {
+				fmt.Println("LIMIT IS: ", limit)
 				cardsSum += 11
 			} else {
+				fmt.Println("LIMIT IS: ", limit)
 				cardsSum += 1
 			}
 		} else if string(card[0:2]) == "10" {
@@ -152,6 +154,8 @@ func startGame() {
 		blackJack = false
 		playerHand = playerHand[:0]
 		dealerHand = dealerHand[:0]
+		dealToPlayer = true
+		dealToHouse = true
 
 		playerScore = 0
 		houseScore = 0
@@ -203,13 +207,16 @@ func startGame() {
 				b.Printf("     ___DEALER HAND___\n")
 				d.Printf("     %s", playerHand)
 				b.Println("\t\t\t    ", dealerHand)
+				var tester string
+				g.Println("\nHit y/n?  ")
+				fmt.Scanln(&tester)
+				// g.Println("\nHit y/n?\n")
+				// rr := bufio.NewReader(os.Stdin)
+				// text, _ := rr.ReadString('\n')
 
-				g.Println("\nHit y/n?\n ")
-				rr := bufio.NewReader(os.Stdin)
-				text, _ := rr.ReadString('\n')
+				if tester != "n" &&
+					tester == "y" {
 
-				if text != "y" {
-					fmt.Println("GOT IN HERE")
 					playerHand = append(playerHand, shoe[0])
 					shoe = shoe[1:len(shoe)]
 
@@ -221,7 +228,16 @@ func startGame() {
 					}
 				}
 
-				if text != "n" && text != "y" && text != "yes" {
+				if tester == "n" && tester != "y" {
+
+					dealToPlayer = false
+				}
+
+				if tester != "n" &&
+					tester != "no" &&
+					tester != "y" &&
+					tester != "yes" {
+
 					dealToPlayer = false
 				}
 
