@@ -103,20 +103,24 @@ func createShoe(s int) []string {
 
 func calculateSum(cards []string, limit int) int {
 	cardsSum := 0
+	if limit == 21 {
+		return 21
+	}
 
 	for _, j := range cards {
 		card := string(j)
 		v := string(card[0])
+		if string(card[0:2]) == "10" {
+			cardsSum += 10
+			continue
+		}
+
 		if v == "A" {
-			if (limit + 11) <= 21 {
-				fmt.Println("LIMIT IS: ", limit)
+			if (limit + 11) < 22 {
 				cardsSum += 11
-			} else {
-				fmt.Println("LIMIT IS: ", limit)
+			} else if (limit + 11) >= 22 {
 				cardsSum += 1
 			}
-		} else if string(card[0:2]) == "10" {
-			cardsSum += 10
 		} else {
 			cardsSum += cardVals[v]
 		}
@@ -210,9 +214,6 @@ func startGame() {
 				var tester string
 				g.Println("\nHit y/n?  ")
 				fmt.Scanln(&tester)
-				// g.Println("\nHit y/n?\n")
-				// rr := bufio.NewReader(os.Stdin)
-				// text, _ := rr.ReadString('\n')
 
 				if tester != "n" &&
 					tester == "y" {
@@ -276,6 +277,7 @@ func startGame() {
 				dealerHandSum = calculateSum(dealerHand, dealerHandSum)
 			}
 
+			playerHandSum = calculateSum(playerHand, playerHandSum)
 			d.Printf("PLAYER SCORE: %d", playerHandSum)
 			b.Printf("\t\tDEALER SCORE: %d", dealerHandSum)
 			d.Printf("\n___PLAYER HAND___\t\t")
