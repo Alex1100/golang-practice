@@ -293,8 +293,6 @@ func startGame() {
 			playerHand = playerHand[:0]
 		}
 
-		// fmt.Println("DEALER: ", dealerHandSum, "\nPLAYER: ", playerHandSum)
-
 		if playerHandSum < 21 &&
 			(21 < dealerHandSum) {
 
