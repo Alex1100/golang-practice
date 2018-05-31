@@ -1,13 +1,12 @@
 package main
 
 import (
-  "bufio"
-  "fmt"
-  "math/rand"
-  "os"
-  "time"
-  "strings"
-  "faith/color"
+	"bufio"
+	"fmt"
+	"github.com/fatih/color"
+	"math/rand"
+	"os"
+	"time"
 )
 
 /*
@@ -26,269 +25,323 @@ import (
 var playerHandSum, houseHandSum int
 
 var cardVals = map[string]int{
-  "A": 1,
-  "2": 2,
-  "3": 3,
-  "4": 4,
-  "5": 5,
-  "6": 6,
-  "7": 7,
-  "8": 8,
-  "9": 9,
-  "10": 10,
-  "J": 10,
-  "Q": 10,
-  "K": 10,
+	"A":  0,
+	"2":  2,
+	"3":  3,
+	"4":  4,
+	"5":  5,
+	"6":  6,
+	"7":  7,
+	"8":  8,
+	"9":  9,
+	"10": 10,
+	"J":  10,
+	"Q":  10,
+	"K":  10,
 }
 
 var cardDefaults = []string{
-  "A",
-  "2",
-  "3",
-  "4",
-  "5",
-  "6",
-  "7",
-  "8",
-  "9",
-  "10",
-  "J",
-  "Q",
-  "K",
+	"A",
+	"2",
+	"3",
+	"4",
+	"5",
+	"6",
+	"7",
+	"8",
+	"9",
+	"10",
+	"J",
+	"Q",
+	"K",
 }
 
 func shuffleCards(d []string) []string {
-  var z, i int
-  var t string
-  z = len(d)
-  r := rand.New(rand.NewSource(time.Now().Unix()))
+	var z, i int
+	var t string
+	z = len(d)
+	r := rand.New(rand.NewSource(time.Now().Unix()))
 
-  for z > 0 {
-    i = random(r, 1, 52)
-    z = z - 1
-    t = d[z]
-    d[z] = d[i]
-    d[i] = t
-  }
+	for z > 0 {
+		i = random(r, 1, 52)
+		z = z - 1
+		t = d[z]
+		d[z] = d[i]
+		d[i] = t
+	}
 
-  return d
+	return d
 }
 
 func createDeck() []string {
-  deck := make([]string, 0)
+	deck := make([]string, 0)
 
-  for _, c := range cardDefaults {
-    card := string(c)
-    variants := []string{
-      card + "♠",
-      card + "♥",
-      card + "♦",
-      card + "♣",
-    }
+	for _, c := range cardDefaults {
+		card := string(c)
+		variants := []string{
+			card + "♠",
+			card + "♥",
+			card + "♦",
+			card + "♣",
+		}
 
-    deck = append(deck, variants...)
-  }
-  deck = shuffleCards(deck)
-  return deck
+		deck = append(deck, variants...)
+	}
+	deck = shuffleCards(deck)
+	return deck
 }
 
 func random(r *rand.Rand, min, max int) int {
-  return r.Intn(max-min) + min
+	return r.Intn(max-min) + min
 }
 
 func createShoe(s int) []string {
-  shoe := make([]string, 0)
-  for i := 0; i < s; i++ {
-    shoe = append(shoe, createDeck()...)
-  }
-  return shoe
+	shoe := make([]string, 0)
+	for i := 0; i < s; i++ {
+		shoe = append(shoe, createDeck()...)
+	}
+	return shoe
 }
 
-func max(a, b int) int {
-  if a >= b {
-      return a
-  }
-  return b
+func calculatPlayerSum(cards []string, limit int) int {
+	playerSum := 0
+
+	for _, j := range cards {
+		card := string(j)
+		v := string(card[0])
+		if v == "A" {
+			if (limit + 11) < 22 {
+				playerSum += 11
+			} else if (limit + 11) > 22 {
+				playerSum += 1
+			}
+		} else if len(card) == 3 {
+			playerSum += 10
+		} else if v != "A" {
+			playerSum += cardVals[v]
+		}
+	}
+	return playerSum
+}
+
+func calculateHouseSum(cards []string, limit int) int {
+	dealerSum := 0
+
+	for _, j := range cards {
+		card := string(j)
+		v := string(card[0])
+		if v == "A" {
+			if (limit + 11) <= 21 {
+				dealerSum += 11
+			} else {
+				dealerSum += 1
+			}
+		} else if len(card) == 3 {
+			dealerSum += 10
+		} else {
+			dealerSum += cardVals[v]
+		}
+	}
+	return dealerSum
 }
 
 func startGame() {
-  r := rand.New(rand.NewSource(time.Now().Unix()))
-  shoeSize := random(r, 2, 9)
-  shoe := createShoe(shoeSize)
+	r := rand.New(rand.NewSource(time.Now().Unix()))
+	shoeSize := random(r, 2, 9)
+	shoe := createShoe(shoeSize)
 
-  rounds := 0
-  playerScore := 0
-  houseScore := 0
+	rounds := 0
+	playerScore := 0
+	houseScore := 0
 
-  playerHand := make([]string, 0)
-  dealerHand := make([]string, 0)
+	playerHand := make([]string, 0)
+	dealerHand := make([]string, 0)
 
-  dealToHouse := true
-  playerBusted := false
-  blackJack := false
+	playerBusted := false
+	blackJack := false
+	dealToPlayer := true
+	dealerBusted := false
+	dealToHouse := true
 
+	for len(shoe) > 4 {
+		playerBusted = false
+		blackJack = false
+		playerHand = playerHand[:0]
+		dealerHand = dealerHand[:0]
+		playerScore = 0
+		houseScore = 0
 
-  affirmativeActions := []string{
-    "yes",
-    "Yes",
-    "YES",
-    "Y",
-    "y",
-    "Alright",
-    "OK",
-    "ok",
-    "sure",
-    "Sure",
-    "hit",
-    "HIT",
-    "Hit"
-}
-  nonAffirmativeActions := []string{
-    "No",
-    "NO",
-    "n",
-    "N",
-    "Nope",
-    "Stay",
-    "stay"
-  }
+		if rounds > 0 {
+			reader := bufio.NewReader(os.Stdin)
+			fmt.Println("\nKeep Playing y/n?\n ")
+			keepPlaying, _ := reader.ReadString('\n')
+			fmt.Println("\nINPUTTED TEXT IS: ", keepPlaying)
+			if keepPlaying != "y" && keepPlaying == "yes" {
+				fmt.Println("\nPLAYER SCORE IS: ", playerScore)
+				fmt.Println("\nHOUSE SCORE IS: ", houseScore)
+				if playerScore > houseScore {
+					fmt.Println("\nPLAYER WON")
+				}
+				if playerScore < houseScore {
+					fmt.Println("\nHOUSE WON")
+				}
+				if playerScore == houseScore {
+					fmt.Println("\nTIED UP")
+				}
 
-  for len(shoe) > 4 {
-    playerBusted = false
-    blackJack = false
-    dealToHouse = true
-    if rounds > 0 {
-      reader:= bufio.NewReader(os.Stdin)
-      fmt.Println("\nKeep Playing y/n?\n ")
-      keepPlaying, _ := reader.ReadString()
+				fmt.Println("\nTHANKS FOR PLAYING")
+				os.Exit(1)
+			}
+		}
 
-      if strings.Contains(nonAffirmativeActions, keepPlaying) {
-        if playerScore > houseScore {
-          fmt.Println("PLAYER WON")
-        } else if playerScore < houseScore {
-          fmt.Println("HOUSE WON")
-        } else if playerScore == houseScore {
-          fmt.Println("TIED UP")
-        }
+		rounds = rounds + 1
 
-        fmt.Println("THANKS FOR PLAYING")
-        os.Exit(1)
-      }
-    }
+		playerHand = append(playerHand, shoe[0])
+		dealerHand = append(dealerHand, shoe[1])
+		playerHand = append(playerHand, shoe[2])
+		dealerHand = append(dealerHand, shoe[3])
+		shoe = shoe[4:len(shoe)]
+		fmt.Println("SHOE AFTER DEALING IS: ", shoe, "\n")
+		playerHandSum := calculatPlayerSum(playerHand, 0)
+		dealerHandSum := calculateHouseSum(dealerHand, 0)
 
-    rounds++
+		if playerHandSum == 21 || dealerHandSum == 21 {
+			blackJack = true
+		}
 
-    playerHand = append(playerHand, shoe[0])
-    dealerHand = append(dealerHand, shoe[1])
-    playerHand = append(playerHand, shoe[2])
-    dealerHand = append(dealerHand, shoe[3])
-    shoe = shoe[:len(shoe)-5]
-    fmt.Println("SHOE AFTER DEALING IS: ", shoe)
+		if len(shoe) > 4 {
+			for (len(playerHand) <= 22 && len(shoe) > 2) && playerBusted == false && blackJack == false && dealToPlayer == true {
 
-    if len(shoe) > 4 {
-      for (len(playerHand <= 22) && len(shoe) > 2) && playerBusted == false && blackJack == false {
+				fmt.Println("\nHit y/n?\n ")
+				r := bufio.NewReader(os.Stdin)
+				text, _ := r.ReadString('\n')
 
-            fmt.Println("\nHit y/n?\n ")
-            text, _ := reader.ReadString()
+				if text != "n" && text != "no" {
+					playerHand = append(playerHand, shoe[0])
+					shoe = shoe[1:len(shoe)]
 
-            if strings.Contains(affirmativeActions, text) {
-              playerHand = append(playerHand, shoe[0])
-              shoe = shoe[:len(shoe)-1]
+					if len(playerHand) == 22 {
+						houseScore = houseScore + 1
+						playerHand = make([]string, 0)
+						dealerHand = make([]string, 0)
+						playerBusted = true
+					}
+				}
 
-              if len(playerHand) == 22 {
-                houseScore++
-                playerHand = make([]string, 0)
-                dealerHand = make([]string, 0)
-                playerBusted = true
-              }
-            } else {
-              // sum up card value in player hand
-              // if it is exactly 21
-              // if it is 21 then go on to checking
-              // house hand
+				if text != "y" && text != "yes" {
+					dealToPlayer = false
+				}
+			}
 
-              // if house hand isn't a soft 17
-              // then create a for/while loop
-              // and keep dealing cards until it sums up to 17 or greater,
-              // a blackjack, or a bust
+			playerHandSum = calculatPlayerSum(playerHand, playerHandSum)
 
-              // if player hand is greater than dealers hand
-              // increment playerScore
-              // if dealer hand is greater than players hand
-              // increment dealerScore
+			for len(shoe) > 2 &&
+				dealerHandSum < 17 &&
+				dealerBusted == false &&
+				blackJack == false &&
+				dealToHouse == true {
 
-              // var filteredPlayerHand, filteredHouseHand []string
-              // var playerHandSum, houseHandSum int
+				dealerHand = append(dealerHand, shoe[0])
+				shoe = shoe[1:len(shoe)]
 
-              //still need to deal to house
+				if len(dealerHand) == 22 {
+					playerScore++
+					dealerHand = make([]string, 0)
+					playerHand = make([]string, 0)
+					dealerBusted = true
+					dealToHouse = false
+				}
 
+				if dealerHandSum > 16 {
+					dealToHouse = false
+				}
 
-              //hand sum calculations
-              playerHandSum = 0
-              houseHandSum = 0
+				dealerHandSum = calculateHouseSum(dealerHand, dealerHandSum)
+			}
 
-              a := max(len(playerHand), len(houseHand))
+			fmt.Println("\n\nDEALER HAND: ", dealerHand, "\nDEALER SCORE: ", dealerHandSum)
+			fmt.Println("\n\nPLAYER HAND: ", playerHand, "\nPLAYER SCORE: ", playerHandSum)
+		}
 
-              for i := 0; i < a; i++ {
-                if (len(playerHand) > i) {
-                  v := playerHand[i]
-                  playerHandSum += cardVals[v]
-                }
+		if dealerHandSum == 21 && playerHandSum != 21 {
+			houseScore = houseScore + 1
+			d := color.New(color.FgGreen, color.Bold)
+			d.Printf("\nBLACKJACK!!! ")
+			fmt.Printf("HOUSE WON ROUND #%d\n", rounds)
+			playerBusted = true
+			blackJack = true
+			dealerHand = dealerHand[:0]
+			playerHand = playerHand[:0]
+		}
 
+		if dealerHandSum != 21 && playerHandSum == 21 {
+			playerScore = playerScore + 1
+			d := color.New(color.FgRed, color.Bold)
+			d.Printf("\nBLACKJACK!!! ")
+			fmt.Printf("PLAYER WON ROUND #%d\n", rounds)
+			blackJack = true
+			dealerHand = dealerHand[:0]
+			playerHand = playerHand[:0]
+		}
 
-                if (len(houseHand) > i) {
-                  v := houseHand[i]
-                  houseHandSum += cardVals[v]
-                }
+		if dealerHandSum == 21 && playerHandSum == 21 {
+			d := color.New(color.FgRed, color.Bold)
+			d.Printf("\nDOUBLE BLACKJACK!!! ")
+			fmt.Printf("ROUND #%d WAS A TIE\n", rounds)
+			playerBusted = true
+			blackJack = true
+			dealerHand = dealerHand[:0]
+			playerHand = playerHand[:0]
+		}
 
-                if (houseHandSum == 21 && playerHandSum != 21) {
-                  houseScore++
-                  d := color.New(color.FgGreen, color.Bold)
-                  d.Printf("\nBLACKJACK!!! ")
-                  fmt.Printf("HOUSE WON ROUND #%d\n", rounds)
-                  playerBusted = true
-                  blackJack = true
-                }
+		fmt.Println("DEALER: ", dealerHandSum, "\nPLAYER: ", playerHandSum)
 
-                if (houseHandSum != 21 && playerHandSum == 21) {
-                  playerScore++
-                  d := color.New(color.FgRed, color.Bold)
-                  d.Printf("\nBLACKJACK!!! ")
-                  fmt.Printf("PLAYER WON ROUND #%d\n", rounds)
-                  blackJack = true
-                }
+		if playerHandSum < 21 && (21 < dealerHandSum) {
+			playerScore = playerScore + 1
+			fmt.Printf("\nPLAYER HAND IS: %s\n", playerHand)
+			fmt.Printf("\nPLAYER WON ROUND #%d\n", rounds)
+			dealerHand = dealerHand[:0]
+			playerHand = playerHand[:0]
+		}
 
-                if (houseHandSum == 21 && playerHandSum == 21) {
-                  d := color.New(color.FgRed, color.Bold)
-                  d.Printf("\nDOUBLE BLACKJACK!!! ")
-                  fmt.Printf("ROUND #%d WAS A TIE\n", rounds)
-                  playerBusted = true
-                  blackJack = true
-                }
-              }
+		if (playerHandSum < 21 && dealerHandSum < 21) && (playerHandSum > dealerHandSum) {
+			playerScore = playerScore + 1
+			fmt.Printf("\nPLAYER HAND IS: %s\n", playerHand)
+			fmt.Printf("\nPLAYER WON ROUND #%d\n", rounds)
+			dealerHand = dealerHand[:0]
+			playerHand = playerHand[:0]
+		}
 
-              if (playerHandSum > houseHandSum) {
-                playerScore++
-                fmt.Printf("\nPLAYER WON ROUND #%d\n", rounds)
-              }
+		if dealerHandSum < 21 && (21 < playerHandSum) {
+			houseScore = houseScore + 1
+			fmt.Printf("\nHOUSE HAND IS: %s\n", dealerHand)
+			fmt.Printf("\nHOUSE WON ROUND #%d\n", rounds)
+			dealerHand = dealerHand[:0]
+			playerHand = playerHand[:0]
+		}
 
-              if (playerHandSum < houseHandSum) {
-                houseScore++
-                fmt.Printf("\nHOUSE WON ROUND #%d\n", rounds)
-              }
+		if (dealerHandSum < 21 && playerHandSum < 21) && (dealerHandSum > playerHandSum) {
+			houseScore = houseScore + 1
+			fmt.Printf("\nHOUSE HAND IS: %s\n", dealerHand)
+			fmt.Printf("\nHOUSE WON ROUND #%d\n", rounds)
+			dealerHand = dealerHand[:0]
+			playerHand = playerHand[:0]
+		}
 
-              if (playerHandSum == houseHandSum) {
-                fmt.Printf("\nROUND #%d WAS A TIE\n", rounds)
-              }
-            }
-      }
-    }
-  }
-  fmt.Println("SHOE IS DONE")
+		if (playerHandSum == dealerHandSum) &&
+			(playerHandSum < 21) ||
+			(playerHandSum > 21 && playerHandSum == dealerHandSum) ||
+			(playerHandSum > 21 && dealerHandSum > 21) {
+			fmt.Printf("\nROUND #%d WAS A TIE\n", rounds)
+			dealerHand = dealerHand[:0]
+			playerHand = playerHand[:0]
+		}
+	}
+	fmt.Println("SHOE IS DONE")
 
-  os.Exit(1)
+	os.Exit(1)
 }
 
 func main() {
-  startGame()
+	startGame()
 }
