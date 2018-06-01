@@ -1,26 +1,13 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"github.com/fatih/color"
 	"math/rand"
 	"os"
+	"os/exec"
 	"time"
 )
-
-/*
-  to allow indexing of the shoe
-  one must opt into slices over
-  structs
-
-  struct types do not allow indexing
-
-  reserve usage of structs for dealing with
-  methods that accept interfaces
-  it's wise to return structs when given
-  an interface as an input to a method
-*/
 
 var cardVals = map[string]int{
 	"A":  0,
@@ -164,29 +151,6 @@ func startGame() {
 		playerScore = 0
 		houseScore = 0
 
-		if rounds > 0 {
-			reader := bufio.NewReader(os.Stdin)
-			fmt.Println("\nPress Enter to Deal New Hands\n ")
-			keepPlaying, _ := reader.ReadString('\n')
-
-			if keepPlaying == "y" && keepPlaying != "yes" {
-				if playerScore > houseScore {
-					d.Printf("\nPLAYER WON")
-				}
-				if playerScore < houseScore {
-					b.Printf("\nHOUSE WON")
-				}
-				if playerScore == houseScore {
-					g.Printf("\nTIED UP")
-				}
-
-				fmt.Println("\nTHANKS FOR PLAYING")
-				return
-			}
-		}
-
-		rounds = rounds + 1
-
 		playerHand = append(playerHand, shoe[0])
 		dealerHand = append(dealerHand, shoe[1])
 		playerHand = append(playerHand, shoe[2])
@@ -291,7 +255,7 @@ func startGame() {
 
 			houseScore = houseScore + 1
 			b.Printf("\nBLACKJACK!!! ")
-			b.Printf("HOUSE WON ROUND #%d\n", rounds)
+			b.Printf("HOUSE WON ROUND #%d\n", rounds+1)
 			playerBusted = true
 			blackJack = true
 			dealerHand = dealerHand[:0]
@@ -304,7 +268,7 @@ func startGame() {
 			playerScore = playerScore + 1
 			d := color.New(color.FgRed, color.Bold)
 			d.Printf("\nBLACKJACK!!! ")
-			d.Printf("PLAYER WON ROUND #%d\n", rounds)
+			d.Printf("PLAYER WON ROUND #%d\n", rounds+1)
 			blackJack = true
 			dealerHand = dealerHand[:0]
 			playerHand = playerHand[:0]
@@ -315,7 +279,7 @@ func startGame() {
 
 			d := color.New(color.FgRed, color.Bold)
 			d.Printf("\nDOUBLE BLACKJACK!!! ")
-			d.Printf("ROUND #%d WAS A TIE\n", rounds)
+			d.Printf("ROUND #%d WAS A TIE\n", rounds+1)
 			playerBusted = true
 			blackJack = true
 			dealerHand = dealerHand[:0]
@@ -327,7 +291,7 @@ func startGame() {
 
 			playerScore = playerScore + 1
 			d.Printf("\nPLAYER HAND IS: %s\n", playerHand)
-			d.Printf("\nPLAYER WON ROUND #%d\n", rounds)
+			d.Printf("\nPLAYER WON ROUND #%d\n", rounds+1)
 			dealerHand = dealerHand[:0]
 			playerHand = playerHand[:0]
 		}
@@ -337,7 +301,7 @@ func startGame() {
 
 			playerScore = playerScore + 1
 			d.Printf("\nPLAYER HAND IS: %s\n", playerHand)
-			d.Printf("\nPLAYER WON ROUND #%d\n", rounds)
+			d.Printf("\nPLAYER WON ROUND #%d\n", rounds+1)
 			dealerHand = dealerHand[:0]
 			playerHand = playerHand[:0]
 		}
@@ -347,7 +311,7 @@ func startGame() {
 
 			houseScore = houseScore + 1
 			b.Printf("\nHOUSE HAND IS: %s\n", dealerHand)
-			b.Printf("\nHOUSE WON ROUND #%d\n", rounds)
+			b.Printf("\nHOUSE WON ROUND #%d\n", rounds+1)
 			dealerHand = dealerHand[:0]
 			playerHand = playerHand[:0]
 		}
@@ -357,7 +321,7 @@ func startGame() {
 
 			houseScore = houseScore + 1
 			b.Printf("\nHOUSE HAND IS: %s\n", dealerHand)
-			b.Printf("\nHOUSE WON ROUND #%d\n", rounds)
+			b.Printf("\nHOUSE WON ROUND #%d\n", rounds+1)
 			dealerHand = dealerHand[:0]
 			playerHand = playerHand[:0]
 		}
@@ -366,10 +330,22 @@ func startGame() {
 			(playerHandSum < 21) ||
 			(playerHandSum > 21 && playerHandSum == dealerHandSum) ||
 			(playerHandSum > 21 && dealerHandSum > 21) {
-			g.Printf("\nROUND #%d WAS A TIE\n", rounds)
+			g.Printf("\nROUND #%d WAS A TIE\n", rounds+1)
 			dealerHand = dealerHand[:0]
 			playerHand = playerHand[:0]
 		}
+
+		var input interface{}
+		fmt.Scanln(&input)
+		if input == nil && len(shoe) > 2 {
+			time.Sleep(2500 * time.Millisecond)
+			cmd := exec.Command("clear")
+			cmd.Stdout = os.Stdout
+			cmd.Run()
+		}
+
+		fmt.Println("\nPress Enter to Deal New Hands\n ")
+		red.Println("\nTo Quit press `ctrl + c`\n")
 	}
 
 	fmt.Println("SHOE IS DONE")
