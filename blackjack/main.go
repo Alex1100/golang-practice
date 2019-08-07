@@ -115,6 +115,33 @@ func calculateSum(cards []string, limit int) int {
 	return cardsSum
 }
 
+func remove(slice []string, s int) []string {
+	if s == -1 {
+		return slice
+	}
+
+	return append(slice[:s], slice[s+1:]...)
+}
+
+func indexOf(slice []string, s string) int {
+	for i, element := range slice {
+		if element == s {
+			return i
+		}
+	}
+	return -1
+}
+
+func includes(slice []string, s string) bool {
+	for _, element := range slice {
+		if element == s {
+			return true
+		}
+	}
+
+	return false
+}
+
 func startGame() {
 	r := rand.New(rand.NewSource(time.Now().Unix()))
 	shoeSize := random(r, 2, 9)
@@ -126,6 +153,7 @@ func startGame() {
 
 	playerHand := make([]string, 0)
 	dealerHand := make([]string, 0)
+	tempDealerHand := make([]string, 0)
 
 	d := color.New(color.FgYellow, color.Bold)
 	b := color.New(color.FgCyan, color.Bold)
@@ -153,8 +181,10 @@ func startGame() {
 
 		playerHand = append(playerHand, shoe[0])
 		dealerHand = append(dealerHand, shoe[1])
+		tempDealerHand = append(tempDealerHand, shoe[1])
 		playerHand = append(playerHand, shoe[2])
 		dealerHand = append(dealerHand, shoe[3])
+		tempDealerHand = append(tempDealerHand, "…")
 		shoe = shoe[4:len(shoe)]
 		playerHandSum := calculateSum(playerHand, 0)
 		dealerHandSum := calculateSum(dealerHand, 0)
@@ -174,7 +204,7 @@ func startGame() {
 				d.Printf("\n     ___PLAYER HAND___\t\t")
 				b.Printf("     ___DEALER HAND___\n")
 				d.Printf("     %s", playerHand)
-				b.Println("\t\t\t    ", dealerHand)
+				b.Println("\t\t\t    ", tempDealerHand)
 				var tester string
 				g.Println("\nHit y/n?  ")
 				fmt.Scanln(&tester)
@@ -189,6 +219,7 @@ func startGame() {
 						houseScore = houseScore + 1
 						playerHand = make([]string, 0)
 						dealerHand = make([]string, 0)
+						tempDealerHand = make([]string, 0)
 						playerBusted = true
 					}
 				}
@@ -224,11 +255,13 @@ func startGame() {
 				dealToHouse == true {
 
 				dealerHand = append(dealerHand, shoe[0])
+				tempDealerHand = append(tempDealerHand, shoe[0])
 				shoe = shoe[1:len(shoe)]
 
 				if len(dealerHand) == 22 {
 					playerScore++
 					dealerHand = make([]string, 0)
+					tempDealerHand = make([]string, 0)
 					playerHand = make([]string, 0)
 					dealerBusted = true
 					dealToHouse = false
@@ -247,6 +280,9 @@ func startGame() {
 			d.Printf("\n___PLAYER HAND___\t\t")
 			b.Printf("___DEALER HAND___\n")
 			d.Printf("%s", playerHand)
+			if includes(dealerHand, "…") {
+				dealerHand = remove(dealerHand, indexOf(dealerHand, "…"))
+			}
 			b.Println("\t\t       ", dealerHand)
 		}
 
@@ -259,6 +295,7 @@ func startGame() {
 			playerBusted = true
 			blackJack = true
 			dealerHand = dealerHand[:0]
+			tempDealerHand = tempDealerHand[:0]
 			playerHand = playerHand[:0]
 		}
 
@@ -271,6 +308,7 @@ func startGame() {
 			d.Printf("PLAYER WON ROUND #%d\n", rounds+1)
 			blackJack = true
 			dealerHand = dealerHand[:0]
+			tempDealerHand = tempDealerHand[:0]
 			playerHand = playerHand[:0]
 		}
 
@@ -283,6 +321,7 @@ func startGame() {
 			playerBusted = true
 			blackJack = true
 			dealerHand = dealerHand[:0]
+			tempDealerHand = tempDealerHand[:0]
 			playerHand = playerHand[:0]
 		}
 
@@ -293,6 +332,7 @@ func startGame() {
 			d.Printf("\nPLAYER HAND IS: %s\n", playerHand)
 			d.Printf("\nPLAYER WON ROUND #%d\n", rounds+1)
 			dealerHand = dealerHand[:0]
+			tempDealerHand = tempDealerHand[:0]
 			playerHand = playerHand[:0]
 		}
 
@@ -303,6 +343,7 @@ func startGame() {
 			d.Printf("\nPLAYER HAND IS: %s\n", playerHand)
 			d.Printf("\nPLAYER WON ROUND #%d\n", rounds+1)
 			dealerHand = dealerHand[:0]
+			tempDealerHand = tempDealerHand[:0]
 			playerHand = playerHand[:0]
 		}
 
@@ -310,9 +351,13 @@ func startGame() {
 			(21 < playerHandSum) {
 
 			houseScore = houseScore + 1
+			if includes(dealerHand, "…") {
+				dealerHand = remove(dealerHand, indexOf(dealerHand, "…"))
+			}
 			b.Printf("\nHOUSE HAND IS: %s\n", dealerHand)
 			b.Printf("\nHOUSE WON ROUND #%d\n", rounds+1)
 			dealerHand = dealerHand[:0]
+			tempDealerHand = tempDealerHand[:0]
 			playerHand = playerHand[:0]
 		}
 
@@ -320,9 +365,13 @@ func startGame() {
 			(dealerHandSum > playerHandSum) {
 
 			houseScore = houseScore + 1
+			if includes(dealerHand, "…") {
+				dealerHand = remove(dealerHand, indexOf(dealerHand, "…"))
+			}
 			b.Printf("\nHOUSE HAND IS: %s\n", dealerHand)
 			b.Printf("\nHOUSE WON ROUND #%d\n", rounds+1)
 			dealerHand = dealerHand[:0]
+			tempDealerHand = tempDealerHand[:0]
 			playerHand = playerHand[:0]
 		}
 
@@ -332,6 +381,7 @@ func startGame() {
 			(playerHandSum > 21 && dealerHandSum > 21) {
 			g.Printf("\nROUND #%d WAS A TIE\n", rounds+1)
 			dealerHand = dealerHand[:0]
+			tempDealerHand = tempDealerHand[:0]
 			playerHand = playerHand[:0]
 		}
 
