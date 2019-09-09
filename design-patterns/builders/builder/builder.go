@@ -9,6 +9,13 @@ package builder
  * Avoid writing the logic to create all the
  * the objects in the package
  *
+ * Help us maintain an unpredictable number
+ * of instances of a given object, interface, etc...
+ *
+ * Reduces technical debt in the source code
+ * so new engineers could create objects, interfaces,
+ * etc... much more rapidly
+ *
  * Example Use cases:
  * 1. Abstract complex creations
  * 2. Creates an object step by step by filling
