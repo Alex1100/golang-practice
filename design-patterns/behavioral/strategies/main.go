@@ -10,6 +10,7 @@ var output = flag.String("output", "console", "The output to use between 'consol
 
 
 func main() {
+  // original
   flag.Parse()
   var activeStrategy strategy.PrintStrategy
   switch *output {
